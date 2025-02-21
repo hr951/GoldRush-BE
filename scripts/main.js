@@ -1,6 +1,9 @@
 import { world, system, ItemStack, EnchantmentType, EquipmentSlot, GameMode } from "@minecraft/server";
 import playerDropBeforeEvent from "./events/playerDropBeforeEvent";
 
+//ここにチェストの座標を入れる
+const ChestLoc = { x:11, y:-11, z:11 };
+
 let dev = false;
 
 function items(player) {
@@ -28,7 +31,6 @@ function items(player) {
     player.runCommand(`function goldrush_items`);
     //armor
     if(player.hasTag("red")) {
-        const ChestLoc = { x:11, y:-11, z:11 };
         const chest = world.getDimension("overworld").getBlock(ChestLoc);
         const chestContainer = chest.getComponent("inventory")?.container;
 
@@ -45,7 +47,6 @@ function items(player) {
         player.getComponent("equippable").setEquipment(EquipmentSlot.Legs, leggings);
         player.getComponent("equippable").setEquipment(EquipmentSlot.Feet, boots);
     } else if(player.hasTag("blue")) {
-        const ChestLoc = { x:11, y:-11, z:11 };
         const chest = world.getDimension("overworld").getBlock(ChestLoc);
         const chestContainer = chest.getComponent("inventory")?.container;
 
