@@ -1,0 +1,36 @@
+{
+    "format_version": 2,
+    "header": {
+      "description": "Gold Rush用 Addon",
+      "name": "Gold Rush用 Addon",
+      "uuid": "3b8a5ff4-6ee8-4a80-8b5e-88b5ac9ed265",
+      "version": [ 1, 0, 0 ],
+      "min_engine_version": [ 1, 19, 60 ]
+    },
+    "modules": [
+      {
+        "description": "",
+        "type": "script",
+        "language": "javascript",
+        "uuid": "2082fcd2-a5a9-411a-abfb-400585f069cc",
+        "version": [ 1, 0, 0 ],
+        "entry": "scripts/main.js"
+      },
+      {
+        "type": "data",
+        "description": "behavior module",
+        "version": [1,0,0],
+        "uuid": "616f62f7-8390-4ebd-a4ef-df2d7883b71e"
+      }
+    ],
+    "dependencies": [
+      {
+        "module_name": "@minecraft/server",
+        "version": "2.0.0-alpha"
+      },
+      {
+        "module_name": "@minecraft/server-ui",
+        "version": "2.0.0-alpha"
+      }
+    ]
+  }
