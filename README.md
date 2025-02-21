@@ -32,4 +32,4 @@
    5. 死亡時の復活クールタイムはない。
 
 ### スペシャルサンクス
-**[Naru8521様 MinePack](https://github.com/Naru8521/MinePack)**より[playerDropBeforeEvent](https://github.com/Naru8521/MinePack/blob/main/scripts/events/playerDropBeforeEvent.js)
+[Naru8521様 MinePack](https://github.com/Naru8521/MinePack)より[playerDropBeforeEvent](https://github.com/Naru8521/MinePack/blob/main/scripts/events/playerDropBeforeEvent.js)
