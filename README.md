@@ -30,6 +30,7 @@
    4. アイテムは極力捨てれないようになっているが、特定の場合のみ捨てることができる。<br>
       その場合、アイテムは消失する。
    5. 死亡時の復活クールタイムはない。
+   6. ワールドに入ったとき、所持しているアイテムは消去される。
 
 ### スペシャルサンクス
 [Naru8521様 MinePack](https://github.com/Naru8521/MinePack)より[playerDropBeforeEvent](https://github.com/Naru8521/MinePack/blob/main/scripts/events/playerDropBeforeEvent.js)
