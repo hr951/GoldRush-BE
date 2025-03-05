@@ -1,33 +1,23 @@
 import { world, system, ItemStack, EnchantmentType, EquipmentSlot, GameMode } from "@minecraft/server";
+import { ModalFormData } from "@minecraft/server-ui";
 import playerDropBeforeEvent from "./events/playerDropBeforeEvent";
 
 //ここにチェストの座標を入れる
 const ChestLoc = { x:11, y:-11, z:11 };
 
+let ore = [{
+    gold:50,
+    coal:14,
+    lapis:13,
+    redstone:10,
+    emerald:10,
+    diamond:3
+}];
+
 let dev = false;
 
 function items(player) {
-    /*const iron_pickaxe = new ItemStack("minecraft:iron_pickaxe",1);
-    iron_pickaxe.getComponent("enchantable")?.addEnchantment({ type: new EnchantmentType("minecraft:unbreaking"), level: 3 });
-    iron_pickaxe.nameTag = "商売道具";
-    iron_pickaxe.setLore(["先がとがっている","商売道具で殺すことはないはず..."]);
-    iron_pickaxe.lockMode = true;
-    const bow = new ItemStack("minecraft:bow",1);
-    bow.getComponent("enchantable")?.addEnchantment({ type: new EnchantmentType("minecraft:power"), level: 3 });
-    bow.getComponent("enchantable")?.addEnchantment({ type: new EnchantmentType("minecraft:unbreaking"), level: 3 });
-    bow.getComponent("enchantable")?.addEnchantment({ type: new EnchantmentType("minecraft:infinity"), level: 1 });
-    bow.nameTag = "強い弓";
-    bow.lockMode = true;
-    const bread = new ItemStack("minecraft:bread",16);
-    bread.lockMode = true;
-    const arrow = new ItemStack("minecraft:arrow",1);
-    arrow.lockMode = true;
-    const inventory = player.getComponent("inventory").container;*/
     player.runCommand(`clear @s`);
-    /*inventory.addItem(iron_pickaxe);
-    inventory.addItem(bow);
-    inventory.addItem(bread);
-    inventory.setItem(9,arrow);*/
     player.runCommand(`function goldrush_items`);
     //armor
     if(player.hasTag("red")) {
@@ -68,9 +58,110 @@ function items(player) {
         const inventory = player.getComponent("inventory").container;
         const nether_star = new ItemStack("minecraft:nether_star",1);
         nether_star.nameTag = "Click to Start";
+        const stick = new ItemStack("minecraft:stick",1);
+        stick.nameTag = "鉱石設置 (殴って使用)";
+        stick.setLore(["《鉱石出現確率》",`金鉱石 ${ore[0].gold}％`,`石炭鉱石 ${ore[0].coal}％`,`ラピス鉱石 ${ore[0].lapis}％`,`レッドストーン鉱石 ${ore[0].redstone}％`,`エメラルド鉱石 ${ore[0].emerald}％`,`ダイヤモンド鉱石 ${ore[0].diamond}％`]);
         inventory.setItem(17,nether_star);
+        inventory.setItem(16,stick);
     }
-}
+};
+
+function setting_form(source){
+    const form = new ModalFormData();
+            // タイトル
+            form.title("§l§gGoldRush§f 開始前設定");
+            // スライダー (ラベル,最小値,最大値,刻み,初期値)
+            form.slider("§g金鉱石§f 生成率", 0, 100, 1, 50);
+            form.slider("§0石炭鉱石§f 生成率", 0, 100, 1, 14);
+            form.slider("§9ラピス鉱石§f 生成率", 0, 100, 1, 13);
+            form.slider("§cレッドストーン鉱石§f 生成率", 0, 100, 1, 10);
+            form.slider("§aエメラルド鉱石§f 生成率", 0, 100, 1, 10);
+            form.slider("§bダイヤモンド鉱石§f 生成率", 0, 100, 1, 3);
+            form.toggle("開発モード(開始しません)", false);
+
+            form.slider("§g金鉱石§f 再生成時間(秒)", 1, 300, 1, 30);
+            form.slider("§0石炭鉱石§f 再生成時間(秒)", 1, 300, 1, 90);
+            form.slider("§9ラピス鉱石§f 再生成時間(秒)", 1, 300, 1, 120);
+            form.slider("§cレッドストーン鉱石§f 再生成時間(秒)", 1, 300, 1, 120);
+            form.slider("§aエメラルド鉱石§f 再生成時間(秒)", 1, 300, 1, 120);
+            form.slider("§bダイヤモンド鉱石§f 再生成時間(秒)", 1, 300, 1, 180);
+            // ドロップダウン (ラベル,配列,初期値)
+            //form.dropdown("ドロップダウン", ["選択肢0", "選択肢1", "選択肢2"], 0);
+            // テキストフィールド (ラベル,プレースホルダ,初期値);
+            form.textField("ゲーム時間", "秒", "600");
+            form.textField("ラストスパート", "秒", "200");
+            // トグル (ラベル,初期値)
+            form.toggle("フレンドリーファイア(未実装)", true);
+    
+            // フォームの表示
+            form.show(source).then(res => {
+                
+                // res.canceled - フォームをキャンセルしたかどうか
+                // res.formValues[] - フォームの入力の配列 (0から始まる)
+                if (res.canceled) {
+                    return;
+                }
+
+                if (!parseInt(res.formValues[13], 10) || !parseInt(res.formValues[14], 10)){
+                    source.sendMessage("[Error] ゲーム時間とラストスパートの時間を確認してください。\n>>>ゲーム時間 "+res.formValues[13]+"\n>>>ラストスパート "+res.formValues[14]);
+                    return;
+                }
+
+                ore = [{ 
+                    gold:res.formValues[0],
+                    coal:res.formValues[1],
+                    lapis:res.formValues[2],
+                    redstone:res.formValues[3],
+                    emerald:res.formValues[4],
+                    diamond:res.formValues[5]
+                },
+                {
+                    gold:res.formValues[7]*20,
+                    coal:res.formValues[8]*20,
+                    lapis:res.formValues[9]*20,
+                    redstone:res.formValues[10]*20,
+                    emerald:res.formValues[11]*20,
+                    diamond:res.formValues[12]*20
+                }];
+
+                const times = {
+                    time:parseInt(res.formValues[13], 10),
+                    x2time:parseInt(res.formValues[14], 10)
+                };
+
+                if(res.formValues[0] + res.formValues[1] + res.formValues[2] + res.formValues[3] + res.formValues[4] + res.formValues[5] != 100){
+                    source.sendMessage("[Error] 鉱石の生成率の合計値が100になりません。")
+                } else if(res.formValues[6]) {
+                    source.sendMessage("開発モードです。\n棒が更新されました。");
+                    source.runCommand("clear @s stick")
+                    const inventory = source.getComponent("inventory").container;
+                    const stick = new ItemStack("minecraft:stick",1);
+                    stick.nameTag = "鉱石設置 (殴って使用)";
+                    stick.setLore(["《鉱石出現確率》",`金鉱石 ${ore[0].gold}％`,`石炭鉱石 ${ore[0].coal}％`,`ラピス鉱石 ${ore[0].lapis}％`,`レッドストーン鉱石 ${ore[0].redstone}％`,`エメラルド鉱石 ${ore[0].emerald}％`,`ダイヤモンド鉱石 ${ore[0].diamond}％`]);
+                    inventory.setItem(16,stick);
+                } else if (times.time <= 0 || times.x2time < 0){
+                    source.sendMessage("[Error] ゲーム時間とラストスパートの時間を確認してください。\n>>>ゲーム時間 "+times.time+"\n>>>ラストスパート "+times.x2time);
+                } else if(times.time<times.x2time) {
+                    source.sendMessage("[Error] ゲーム時間よりラストスパートの時間のほうが大きくなることはできません。")
+                } else {
+                    const scoreboard = world.scoreboard;
+                    const object = scoreboard.getObjective("goldrush_info");
+                    object.setScore("time",times.time);
+                    object.setScore("x2time",times.x2time);
+                    source.runCommand("clear @s");
+                    source.runCommand("function goldrush_reset");
+                    source.runCommand("function goldrush_team");
+                    dev = true;
+                    for (const player of world.getPlayers()){
+                        player.setGameMode(GameMode.survival);
+                        items(player);
+                        player.onScreenDisplay.setTitle("§aS§fTART !");
+                        player.onScreenDisplay.updateSubtitle(`マイクラ §gGold Rush`);
+                        player.playSound("random.levelup", { location: player.location });
+                     }
+                }
+            });
+        };
 
 world.afterEvents.playerSpawn.subscribe(ev => {
     const player = ev.player;
@@ -81,9 +172,10 @@ world.afterEvents.playerSpawn.subscribe(ev => {
         const nether_star = new ItemStack("minecraft:nether_star",1);
         nether_star.nameTag = "Click to Start";
         const stick = new ItemStack("minecraft:stick",1);
-        stick.nameTag = "鉱石設置 (左：鉱石設置,右:石に戻す)";
-        inventory.setItem(16,stick);
+        stick.nameTag = "鉱石設置 (殴って使用)";
+        stick.setLore(["《鉱石出現確率》",`金鉱石 ${ore[0].gold}％`,`石炭鉱石 ${ore[0].coal}％`,`ラピス鉱石 ${ore[0].lapis}％`,`レッドストーン鉱石 ${ore[0].redstone}％`,`エメラルド鉱石 ${ore[0].emerald}％`,`ダイヤモンド鉱石 ${ore[0].diamond}％`]);
         inventory.setItem(17,nether_star);
+        inventory.setItem(16,stick);
     }
     if(ev.initialSpawn) return;
     items(player);
@@ -98,23 +190,31 @@ world.beforeEvents.playerBreakBlock.subscribe(ev => {
     const itemstack = ev.itemStack;
     if (player.hasTag("admin")){
         if (!itemstack) return;
-        if (block.type.id === "minecraft:stone" && itemstack.nameTag === "鉱石設置 (左：鉱石設置,右:石に戻す)" && itemstack.typeId === "minecraft:stick"){
+        if (itemstack.nameTag === "鉱石設置 (殴って使用)" && itemstack.typeId === "minecraft:stick"){
+        if (block.type.id === "minecraft:stone"){
             system.run(() => {
                     var random = Math.floor( Math.random() * 100 );
-                    if (random <= 49) {
+                    if (random <= ore[0].gold-1) {
                         dimension.getBlock(block_loc).setType("minecraft:gold_ore");
-                    } else if (random <= 63) {
+                    } else if (random <= ore[0].gold-1 + ore[0].coal) {
                         dimension.getBlock(block_loc).setType("minecraft:coal_ore");
-                    } else if (random <= 76) {
+                    } else if (random <= ore[0].gold-1 + ore[0].coal + ore[0].lapis) {
                         dimension.getBlock(block_loc).setType("minecraft:lapis_ore");
-                    } else if (random <= 86) {
+                    } else if (random <= ore[0].gold-1 + ore[0].coal + ore[0].lapis + ore[0].redstone) {
                         dimension.getBlock(block_loc).setType("minecraft:redstone_ore");
-                    } else if (random <= 96) {
+                    } else if (random <= ore[0].gold-1 + ore[0].coal + ore[0].lapis + ore[0].redstone + ore[0].emerald) {
                         dimension.getBlock(block_loc).setType("minecraft:emerald_ore");
-                    } else if (random <= 99) {
+                    } else if (random <= ore[0].gold-1 + ore[0].coal + ore[0].lapis + ore[0].redstone + ore[0].emerald + ore[0].diamond) {
                         dimension.getBlock(block_loc).setType("minecraft:diamond_ore");
+                    } else {
+                        dimension.getBlock(block_loc).setType("minecraft:stone");
                     }
             })
+        } else if (block.type.id === "minecraft:gold_ore" || block.type.id === "minecraft:coal_ore" || block.type.id === "minecraft:lapis_ore" || block.type.id === "minecraft:redstone_ore" || block.type.id === "minecraft:lit_redstone_ore" || block.type.id === "minecraft:emerald_ore" || block.type.id === "minecraft:diamond_ore"){
+            system.run(() => {
+                dimension.getBlock(block_loc).setType("minecraft:stone");
+            });
+        }
         }
      }
     if (gamemode === "creative") return;
@@ -132,9 +232,6 @@ world.beforeEvents.playerBreakBlock.subscribe(ev => {
     world.beforeEvents.playerInteractWithBlock.subscribe(ev => {
         const player = ev.player;
         const block = ev.block.type.id;
-        const itemstack = ev.itemStack;
-        const dimension = ev.block.dimension;
-        const block_loc = ev.block.location;
         if (ev.isFirstEvent){
         if (block === "minecraft:gold_ore"){
             player.sendMessage("[System] 金の原石を入手できます。")
@@ -149,24 +246,6 @@ world.beforeEvents.playerBreakBlock.subscribe(ev => {
         } else if (block === "minecraft:diamond_ore"){
             player.sendMessage("[System] 採掘速度とスピードが上昇します。")
         }
-        system.run(() => {
-            if (!itemstack) return;
-            if (player.hasTag("admin") && itemstack.type.id === "minecraft:stick" && itemstack.nameTag === "鉱石設置 (左：鉱石設置,右:石に戻す)"){
-                if (block === "minecraft:gold_ore"){
-                    dimension.getBlock(block_loc).setType("minecraft:stone");
-                } else if (block === "minecraft:coal_ore"){
-                    dimension.getBlock(block_loc).setType("minecraft:stone");
-                } else if (block === "minecraft:lapis_ore"){
-                    dimension.getBlock(block_loc).setType("minecraft:stone");
-                } else if (block === "minecraft:redstone_ore" || block === "minecraft:lit_redstone_ore"){
-                    dimension.getBlock(block_loc).setType("minecraft:stone");
-                } else if (block === "minecraft:emerald_ore"){
-                    dimension.getBlock(block_loc).setType("minecraft:stone");
-                } else if (block === "minecraft:diamond_ore"){
-                    dimension.getBlock(block_loc).setType("minecraft:stone");
-                }
-            }
-        });
         }
     });
     //Block右クリ(after)
@@ -187,22 +266,8 @@ world.beforeEvents.playerBreakBlock.subscribe(ev => {
         if (source.hasTag("admin")){
         if (itemStack.typeId === "minecraft:nether_star" && itemStack.nameTag === "Click to Start") {
             //start処理
-            const scoreboard = world.scoreboard;
-            const object = scoreboard.getObjective("goldrush_info");
-            const settime = object.getScore("settime");
-            object.setScore("time",settime);
-            source.runCommand("clear @s nether_star");
-            source.runCommand("function goldrush_reset");
-            source.runCommand("function goldrush_team");
-            dev = true;
-            for (const player of world.getPlayers()){
-                player.setGameMode(GameMode.survival);
-                items(player);
-                player.onScreenDisplay.setTitle("§aS§fTART !");
-                player.onScreenDisplay.updateSubtitle(`マイクラ §gGold Rush`);
-                player.playSound("random.levelup", { location: player.location });
+            setting_form(source);
             }
-        }
         }
         if (itemStack.typeId === "minecraft:red_dye" && itemStack.nameTag === "回復薬 (右クリックで使用)") {
             source.playSound("random.orb", { location: source.location });
@@ -245,7 +310,7 @@ world.beforeEvents.playerBreakBlock.subscribe(ev => {
             dimension.getBlock(blocklocation).setType("minecraft:cobblestone");
             system.runTimeout(() => {
                 dimension.getBlock(blocklocation).setType("minecraft:gold_ore");
-            }, 600); 
+            }, ore[1].gold); 
         } else if (brokenBlockPermutation.type.id === 'minecraft:emerald_ore') {
             player.addEffect("health_boost", 600, { amplifier: 4, showParticles: false });
             player.addEffect("instant_health", 1, { amplifier: 255, showParticles: false });
@@ -253,14 +318,14 @@ world.beforeEvents.playerBreakBlock.subscribe(ev => {
             dimension.getBlock(blocklocation).setType("minecraft:cobblestone");
             system.runTimeout(() => {
                 dimension.getBlock(blocklocation).setType("minecraft:emerald_ore");
-            }, 2400); 
+            }, ore[1].emerald); 
         } else if (brokenBlockPermutation.type.id === 'minecraft:coal_ore') {
             player.addEffect("haste", 300, { amplifier: 0, showParticles: false });
             player.sendMessage("[System] 採掘速度が15秒間上昇します。");
             dimension.getBlock(blocklocation).setType("minecraft:cobblestone");
             system.runTimeout(() => {
                 dimension.getBlock(blocklocation).setType("minecraft:coal_ore");
-            }, 1800); 
+            }, ore[1].coal); 
         } else if (brokenBlockPermutation.type.id === 'minecraft:diamond_ore') {
             player.addEffect("haste", 300, { amplifier: 2, showParticles: false });
             player.addEffect("speed", 300, { amplifier: 0, showParticles: false });
@@ -268,25 +333,24 @@ world.beforeEvents.playerBreakBlock.subscribe(ev => {
             dimension.getBlock(blocklocation).setType("minecraft:cobblestone");
             system.runTimeout(() => {
                 dimension.getBlock(blocklocation).setType("minecraft:diamond_ore");
-            }, 3600); 
+            }, ore[1].diamond); 
         } else if (brokenBlockPermutation.type.id === 'minecraft:lapis_ore') {
             const red_dye = new ItemStack("minecraft:red_dye",1);
             red_dye.nameTag = "回復薬 (右クリックで使用)";
-            red_dye.lockMode = true;
             const inventory = player.getComponent("inventory").container;
             inventory.addItem(red_dye);
             player.sendMessage("[System] 回復薬を入手しました。");
             dimension.getBlock(blocklocation).setType("minecraft:cobblestone");
             system.runTimeout(() => {
                 dimension.getBlock(blocklocation).setType("minecraft:lapis_ore");
-            }, 2400); 
+            }, ore[1].lapis); 
         } else if (brokenBlockPermutation.type.id === 'minecraft:lit_redstone_ore' || brokenBlockPermutation.type.id === 'minecraft:redstone_ore') {
             player.addEffect("strength", 200, { amplifier: 0, showParticles: false });
             player.sendMessage("[System] 攻撃力が10秒間上昇します。");
             dimension.getBlock(blocklocation).setType("minecraft:cobblestone");
             system.runTimeout(() => {
                 dimension.getBlock(blocklocation).setType("minecraft:redstone_ore");
-            }, 2400); 
+            }, ore[1].redstone); 
         }
         });
         //金の原石カウント処理
