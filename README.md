@@ -32,5 +32,10 @@
    5. 死亡時の復活クールタイムはない。
    6. ワールドに入ったとき、所持しているアイテムは消去される。
 
+### アップデート
+   2025/03/05<br>
+   > ゲームの開始時に鉱石の生成率、鉱石の再生成時間、試合時間、ラストスパートの時間、フレンドリーファイアの有無(未実装)を変更できるようになりました。<br>
+   > 鉱石の生成率を変更して、「開発モード(開始されません)」を有効化すると棒を使った鉱石生成の確率が変化します。
+
 ### スペシャルサンクス
 [Naru8521様 MinePack](https://github.com/Naru8521/MinePack)より[playerDropBeforeEvent](https://github.com/Naru8521/MinePack/blob/main/scripts/events/playerDropBeforeEvent.js)
